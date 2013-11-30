@@ -3,6 +3,9 @@
     using System;
     using System.Collections.Generic;
 
+    /// <summary>
+    /// BBSルート
+    /// </summary>
     public class MonaBbs
     {
         /// <summary>
@@ -13,6 +16,9 @@
         IList<MonaCategory> Category;
     }
 
+    /// <summary>
+    /// カテゴリ
+    /// </summary>
     public class MonaCategory
     {
         MonaBbs Bbs;
@@ -27,6 +33,9 @@
         IList<MonaBoard> Boards;
     }
 
+    /// <summary>
+    /// 板
+    /// </summary>
     public class MonaBoard 
     {
         MonaCategory Category;
@@ -36,7 +45,7 @@
         /// </summary>
         string Raw;
 
-        string Server;
+        Uri Server;
         int Id;
         int No;
         string Name;
@@ -44,7 +53,8 @@
     }
 
     /// <summary>
-    /// DATを読み込ませれば独立してそこそこ動くようにする。
+    /// スレッド
+    /// DATを読み込ませれば独立してそこそこ動くようにしたい。
     /// </summary>
     public class MonaThread 
     {
@@ -62,6 +72,9 @@
         IList<MonaResponse> Responses;
     }
 
+    /// <summary>
+    /// レス
+    /// </summary>
     public class MonaResponse 
     {
         MonaThread Thread;
