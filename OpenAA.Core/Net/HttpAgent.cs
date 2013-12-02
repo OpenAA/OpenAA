@@ -22,8 +22,12 @@
         public HttpAgent(HttpMessageHandler handler, bool disposeHandler)
             : base (handler, disposeHandler)
         {
-            this.DefaultRequestHeaders.Add("User-Agent", @"Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16");
+            // cookie用
+            this.HttpClientHandler = handler as HttpClientHandler;
 
+            // User-Agent
+            this.DefaultRequestHeaders.Add("User-Agent", @"Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16");
+            // Accpet
             this.DefaultRequestHeaders.Accept.Clear();
             this.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html", 0.9));
             this.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml", 0.9));
@@ -33,8 +37,9 @@
             this.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/gif" , 0.1));
             this.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("image/x-xbitmap", 0.1));
             this.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.1));
-
         }
+
+        public HttpClientHandler HttpClientHandler { get; private set; }
 
         public Task<string> GetStringWithAutoDetectEncodingAsync (string requestUri)
         {

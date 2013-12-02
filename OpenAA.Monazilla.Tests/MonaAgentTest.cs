@@ -4,6 +4,7 @@
     using System;
     using System.Linq;
     using OpenAA.Monazilla;
+    using OpenAA.Extensions.IEnumerable;
 
     [TestFixture()]
     public class MonaAgentTest
@@ -43,6 +44,31 @@
             {
                 Console.WriteLine(thread);
             }
+        }
+
+        [Test]
+        public void CreateResponse()
+        {
+            var mona = new MonaAgent();
+            var t1 = mona.GetCategories();
+            t1.Wait();
+
+            var cate = t1.Result.First(x => x.Name == "雑談系２");
+            Console.WriteLine(cate);
+
+            var board = cate.Boards.First(x => x.Name.Contains("嫌儲"));
+            Console.WriteLine(board);
+
+            var t2 = mona.GetSubject(board);
+            t2.Wait();
+            var thread = t2.Result
+                .Where(x => 10 < x.Nums)
+                .OrderByDescending(x => x.CreateTime)
+                .First();
+            Console.WriteLine(thread);
+
+            var t3 = mona.CreateResponse(thread, "てすと", "openaa.org", "はげちゃびん");
+            t3.Wait();
         }
     }
 }

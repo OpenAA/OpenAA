@@ -58,6 +58,7 @@
     <Compile Include="DateTimeUtility.cs" />
     <Compile Include="DoubleUtility.cs" />
     <Compile Include="Int32Utility.cs" />
+    <Compile Include="Net\Http\DictionaryContent.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -78,5 +79,6 @@
     <Folder Include="Security\Checksum\" />
     <Folder Include="Text\" />
     <Folder Include="IO\" />
+    <Folder Include="Net\Http\" />
   </ItemGroup>
 </Project>
