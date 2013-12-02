@@ -31,6 +31,13 @@
             RegexOptions.Singleline | 
             RegexOptions.Compiled);
 
+        private static readonly Regex RegexSubject = new Regex(
+            @"(?<id>[0-9]*).dat\<\>(?<title>.*?)\((?<nums>[0-9]*)\)", 
+            RegexOptions.IgnoreCase | 
+            RegexOptions.Singleline | 
+            RegexOptions.Compiled);
+
+
         private static readonly List<string> IgnoreCategories = new List<string>{ "特別企画", "チャット", "ツール類" };
 
         private static readonly List<string> IgnoreBoards     = new List<string>{ "2chプロジェクト", "いろいろランク" };
@@ -158,6 +165,55 @@
             }
 
             return categories;
+        }
+
+        // ------------------------------------------------------------
+
+        public async Task<IList<MonaThread>> GetSubject(MonaBoard board)
+        {
+            var url = new Uri(board.Server + "/" + board.Id + "/subject.txt");
+            _logger.Trace(url);
+
+            var subject = "";
+            using (var agent = new HttpAgent())
+            {
+                subject = await agent.GetStringWithAutoDetectEncodingAsync(url);
+            }
+
+            var threads = ParseSubject(board, subject);
+            return threads;
+        }
+
+        private IList<MonaThread> ParseSubject(MonaBoard board, string subject)
+        {
+            var threads = new List<MonaThread>();
+            var now = DateTime.Now;
+            int cnt = 1;
+
+            foreach (var line in subject.SplitToLines())
+            {
+                _logger.Trace(line);
+
+                var match = RegexSubject.Match(line);
+                if (!match.Success)
+                {
+                    _logger.Debug("unmatch: " + line);
+                    continue;
+                }
+
+                var thread = new MonaThread
+                {
+                    Board = board,
+                    No    = cnt++,
+                    Id    = match.Groups["id"].Value,
+                    Title = match.Groups["title"].Value,
+                    Nums  = Int32Utility.ParseOrDefault(match.Groups["nums"].Value),
+                    UpdateTime = now,
+                };
+                threads.Add(thread);
+            }
+
+            return threads;
         }
     }
 }

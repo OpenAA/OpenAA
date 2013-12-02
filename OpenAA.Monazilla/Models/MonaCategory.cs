@@ -12,22 +12,21 @@
         /// <summary>
         /// カテゴリ名
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// カテゴリに含まれる板一覧
         /// </summary>
-        public IList<MonaBoard> Boards = new List<MonaBoard>();
+        public IList<MonaBoard> Boards { get; set; }
+
+        public MonaCategory()
+        {
+            this.Boards = new List<MonaBoard>();
+        }
 
         public override string ToString()
         {
-            var ret = "Name: " + Name + " {" + Environment.NewLine;
-            foreach (var board in Boards)
-            {
-                ret += "  " + board.ToString() + Environment.NewLine;
-            }
-            ret += "}";
-            return ret;
+            return string.Format("[MonaCategory: Name={0}, Boards={1}]", Name, Boards);
         }
     }
 }

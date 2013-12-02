@@ -36,7 +36,12 @@
 
         }
 
-        public async Task<string> GetStringWithAutoDetectEncodingAsync (string requestUri)
+        public Task<string> GetStringWithAutoDetectEncodingAsync (string requestUri)
+        {
+            return GetStringWithAutoDetectEncodingAsync(new Uri(requestUri));
+        }
+
+        public async Task<string> GetStringWithAutoDetectEncodingAsync (Uri requestUri)
         {
             var buffer = await this.GetByteArrayAsync(requestUri);
 

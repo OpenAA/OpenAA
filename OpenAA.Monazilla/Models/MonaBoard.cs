@@ -12,31 +12,35 @@
         /// カテゴリ名
         /// bbsmenu.htmlに含まれる日本語表記
         /// </summary>
-        public MonaCategory Category;
+        public MonaCategory Category { get; set; }
 
         /// <summary>
         /// サーバーのURL
         /// </summary>
-        public Uri Server;
+        public Uri Server { get; set; }
 
         /// <summary>
         /// 板ID
         /// URLに含まれるアルファベット表記
         /// </summary>
-        public string Id;
+        public string Id { get; set; }
 
         /// <summary>
         /// 板名
         /// bbsmenu.htmlに登場する日本語表記
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
+
+        public IList<MonaThread> Threads { get; set; }
+
+        public MonaBoard()
+        {
+            this.Threads = new List<MonaThread>();
+        }
 
         public override string ToString()
         {
-            return
-                "Name: "   + Name + ", " +
-                "Id: "     + Id + ", " +
-                "Server: " + Server;
+            return string.Format("[MonaBoard: Category={0}, Server={1}, Id={2}, Name={3}, Threads={4}]", Category, Server, Id, Name, Threads);
         }
     }
 }

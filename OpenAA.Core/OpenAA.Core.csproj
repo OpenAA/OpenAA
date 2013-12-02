@@ -57,6 +57,7 @@
     <Compile Include="Net\HttpAgent.cs" />
     <Compile Include="DateTimeUtility.cs" />
     <Compile Include="DoubleUtility.cs" />
+    <Compile Include="Int32Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

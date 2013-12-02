@@ -12,31 +12,31 @@
         /// <summary>
         /// スレが所属する板
         /// </summary>
-        public MonaBoard Board;
+        public MonaBoard Board { get; set; }
 
         /// <summary>
         /// 出現順序
         /// ソート用
         /// </summary>
-        public int No;
+        public int No { get; set; }
 
         /// <summary>
         /// スレID
         /// 実はUnixTime
         /// </summary>
-        public string Id;
+        public string Id { get; set; }
 
         /// <summary>
         /// スレタイ
         /// </summary>
-        public string Title;
+        public string Title { get; set; }
 
         /// <summary>
         /// レス数（概算）
         /// スレタイから抜き出した概算値なので正確な値は
         /// datを取得してレス数をカウントせよ。
         /// </summary>
-        public int Nums;
+        public int Nums { get; set; }
 
         /// <summary>
         /// スレId (実態はUnix Time)をDateTimeに変換したスレ作成日時
@@ -56,7 +56,7 @@
         /// 勢い算出用
         /// </summary>
         /// <value>The update time.</value>
-        public DateTime UpdateTime;
+        public DateTime UpdateTime { get; set; }
 
         /// <summary>
         /// 勢い
@@ -76,6 +76,18 @@
                     return ret;
                 }
             }
+        }
+
+        public IList<MonaResponse> Responses { get; set; }
+
+        public MonaThread()
+        {
+            this.Responses = new List<MonaResponse>();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[MonaThread: Board={0}, No={1}, Id={2}, Title={3}, Nums={4}, CreateTime={5}, UpdateTime={6}, Trend={7}]", Board, No, Id, Title, Nums, CreateTime, UpdateTime, Trend);
         }
     }
 
