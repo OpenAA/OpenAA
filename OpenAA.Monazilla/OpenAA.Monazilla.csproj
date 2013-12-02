@@ -43,6 +43,7 @@
     <Compile Include="Models\MonaCategory.cs" />
     <Compile Include="Models\MonaThread.cs" />
     <Compile Include="Models\MonaResponse.cs" />
+    <Compile Include="MonaAgentSession.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

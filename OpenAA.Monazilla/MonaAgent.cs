@@ -91,13 +91,13 @@
             return html;
         }
 
-        private string GetBbsMenuCachePath()
+        public string GetBbsMenuCachePath()
         {
             var path = PathUtility.GetDataPath() + Path.DirectorySeparatorChar + "bbsmenu.html";
             return path;
         }
 
-        private IList<MonaCategory> ParseBbsMenu(string bbsMenuHtml)
+        public IList<MonaCategory> ParseBbsMenu(string bbsMenuHtml)
         {
             var categories = new List<MonaCategory>();
 
@@ -184,7 +184,7 @@
             return threads;
         }
 
-        private IList<MonaThread> ParseSubject(MonaBoard board, string subject)
+        public IList<MonaThread> ParseSubject(MonaBoard board, string subject)
         {
             var threads = new List<MonaThread>();
             var now = DateTime.Now;
@@ -214,6 +214,13 @@
             }
 
             return threads;
+        }
+
+        // ------------------------------------------------------------
+
+        public void PostResponse(MonaThread thread, string name, string mail, string message)
+        {
+            throw new NotImplementedException();
         }
     }
 }
