@@ -67,7 +67,7 @@
                 .First();
             Console.WriteLine(thread);
 
-            var t3 = mona.CreateResponse(thread, "てすと", "openaa.org", "はげちゃびん");
+            var t3 = mona.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
             t3.Wait();
         }
     }
