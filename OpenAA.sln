@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAA.Monazilla.Tests", "OpenAA.Monazilla.Tests\OpenAA.Monazilla.Tests.csproj", "{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAA.Core.Tests", "OpenAA.Core.Tests\OpenAA.Core.Tests.csproj", "{443ADEF3-29FB-4992-9E40-70FA9732DC89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +22,18 @@ Global
 		AppStore|Any CPU = AppStore|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443ADEF3-29FB-4992-9E40-70FA9732DC89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{984033A2-9987-4F57-984A-5CB225BF685B}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
 		{984033A2-9987-4F57-984A-5CB225BF685B}.AppStore|Any CPU.Build.0 = Debug|Any CPU
 		{984033A2-9987-4F57-984A-5CB225BF685B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -206,5 +222,19 @@ Global
 		$31.inheritsSet = VisualStudio
 		$31.inheritsScope = text/plain
 		$31.scope = text/plain
+		$0.TextStylePolicy = $32
+		$32.inheritsSet = null
+		$32.scope = application/config+xml
+		$0.XmlFormattingPolicy = $33
+		$33.inheritsSet = null
+		$33.scope = application/config+xml
+		$0.TextStylePolicy = $34
+		$34.inheritsSet = Mono
+		$34.inheritsScope = text/plain
+		$34.scope = application/xml
+		$0.XmlFormattingPolicy = $35
+		$35.inheritsSet = Mono
+		$35.inheritsScope = application/xml
+		$35.scope = application/xml
 	EndGlobalSection
 EndGlobal

@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{CA5834CF-5253-425F-BAB2-CF58A964BC44}</ProjectGuid>
+    <ProjectGuid>{7FF68FEB-A72B-4CD2-AF88-8C687A97612F}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>OpenAA.Monazilla</RootNamespace>
-    <AssemblyName>OpenAA.Monazilla</AssemblyName>
+    <RootNamespace>OpenAA.Monazilla.Tests</RootNamespace>
+    <AssemblyName>OpenAA.Monazilla.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,29 +31,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="NLog">
-      <HintPath>..\packages\NLog.2.1.0\lib\net40\NLog.dll</HintPath>
+    <Reference Include="nunit.framework">
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MonaAgent.cs" />
-    <Compile Include="Models\MonaBoard.cs" />
-    <Compile Include="Models\MonaCategory.cs" />
-    <Compile Include="Models\MonaThread.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\OpenAA.Monazilla\OpenAA.Monazilla.csproj">
+      <Project>{CA5834CF-5253-425F-BAB2-CF58A964BC44}</Project>
+      <Name>OpenAA.Monazilla</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OpenAA.Core\OpenAA.Core.csproj">
       <Project>{984033A2-9987-4F57-984A-5CB225BF685B}</Project>
       <Name>OpenAA.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
 </Project>

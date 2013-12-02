@@ -300,11 +300,11 @@
             {
                 ret = source.Replace("\r\n", "\r\n" + space);
             }
-            if (0 <= source.IndexOf("\r"))
+            else if (0 <= source.IndexOf("\r"))
             {
                 ret = source.Replace("\r", "\r" + space);
             }
-            if (0 <= source.IndexOf("\n"))
+            else if (0 <= source.IndexOf("\n"))
             {
                 ret = source.Replace("\n", "\n" + space);
             }

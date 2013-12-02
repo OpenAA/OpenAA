@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>OpenAA</RootNamespace>
     <AssemblyName>OpenAA.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,6 +35,7 @@
       <HintPath>..\packages\NLog.2.1.0\lib\net40\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -45,6 +47,16 @@
     <Compile Include="Extensions\IList\IListExtensions.cs" />
     <Compile Include="Extensions\String\StringExtensions.cs" />
     <Compile Include="Extensions\Uri\UriExtensions.cs" />
+    <Compile Include="Security\Cryptography\HashUtility.cs" />
+    <Compile Include="Security\Checksum\Adler32.cs" />
+    <Compile Include="Security\Checksum\CRC32.cs" />
+    <Compile Include="Security\Checksum\IChecksum.cs" />
+    <Compile Include="Security\Checksum\StrangeCRC.cs" />
+    <Compile Include="Text\EncodingDetector.cs" />
+    <Compile Include="IO\PathUtility.cs" />
+    <Compile Include="Net\HttpAgent.cs" />
+    <Compile Include="DateTimeUtility.cs" />
+    <Compile Include="DoubleUtility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -59,5 +71,11 @@
     <Folder Include="Extensions\IList\" />
     <Folder Include="Extensions\String\" />
     <Folder Include="Extensions\Uri\" />
+    <Folder Include="Net\" />
+    <Folder Include="Security\" />
+    <Folder Include="Security\Cryptography\" />
+    <Folder Include="Security\Checksum\" />
+    <Folder Include="Text\" />
+    <Folder Include="IO\" />
   </ItemGroup>
 </Project>

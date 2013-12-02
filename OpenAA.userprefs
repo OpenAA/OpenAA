@@ -1,9 +1,39 @@
 ﻿<Properties GitUserInfo="UsingMD">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="OpenAA.Core/IO/PathUtility.cs">
+    <Files>
+      <File FileName="OpenAA.Monazilla.Tests/Test.cs" Line="17" Column="1" />
+      <File FileName="OpenAA.Monazilla/MonaAgent.cs" Line="87" Column="39" />
+      <File FileName="OpenAA.Core/IO/PathUtility.cs" Line="31" Column="45" />
+    </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State expanded="True">
+          <Node name="OpenAA.Core.Tests" expanded="True">
+            <Node name="OpenAA" expanded="True">
+              <Node name="Tests" expanded="True">
+                <Node name="Test" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+          <Node name="OpenAA.Monazilla.Tests" expanded="True">
+            <Node name="OpenAA" expanded="True">
+              <Node name="Monazilla" expanded="True">
+                <Node name="Tests" expanded="True">
+                  <Node name="Test" expanded="True">
+                    <Node name="TestCase" selected="True" />
+                  </Node>
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <AuthorInfo Name="OpenAA.org" Email="" Copyright="OpenAA.org" Company="" Trademark="" />
+  <AuthorInfo Name="OpenAA.org" Email="openaa.org@gmail.com" Copyright="OpenAA.org" Company="OpenAA.org" Trademark="OpenAA.org" />
 </Properties>
