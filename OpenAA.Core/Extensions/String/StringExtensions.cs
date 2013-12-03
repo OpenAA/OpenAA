@@ -6,6 +6,8 @@
     using System.Text;
     using System.Globalization;
 
+    using OpenAA.Extensions.Char;
+
     /// <summary>
     /// System.Stringの拡張クラス
     /// </summary>
@@ -255,6 +257,16 @@
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Ises the ASCII alphabet and numeric.
+        /// </summary>
+        /// <returns><c>true</c>, if ASCII alphabet and numeric was ised, <c>false</c> otherwise.</returns>
+        /// <param name="text">Text.</param>
+        public static bool IsAsciiAlphabetAndNumeric(this string text)
+        {
+            return text.All(c => c.IsAlphabetCharacter() || c.IsNumberCharacter());
         }
 
         /// <summary>

@@ -50,7 +50,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = OpenAA.Core\OpenAA.Core.csproj
+		StartupItem = OpenAA.Monazilla.Tests\OpenAA.Monazilla.Tests.csproj
 		Policies = $0
 		$0.StandardHeader = $1
 		$1.Text = 

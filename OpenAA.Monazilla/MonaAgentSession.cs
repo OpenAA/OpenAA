@@ -2,11 +2,18 @@
 {
     using System;
     using System.IO;
+
     using OpenAA.IO;
+    using OpenAA.Extensions.String;
+
+    using Newtonsoft.Json;
+    using NLog;
 
     public class MonaAgentSession : IDisposable
     {
-        public int Id { get; set; }
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+        public string Id { get; set; }
 
         public string HAP { get; set; }
 
@@ -14,32 +21,86 @@
 
         public DateTime Wait { get; set; }
 
-        public MonaAgentSession(int id = 0)
+        private MonaAgentSession()
         {
-        }
-
-        public void Load()
-        {
-            throw new NotImplementedException();
         }
 
         public void Save()
         {
-            throw new NotImplementedException();
+            _logger.Trace("Save");
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            var path = GetSessionPath(this.Id);
+            using (var writer = new StreamWriter(path))
+            {
+                writer.Write(json);
+            }
         }
 
-        public static string GetSessionPath(int id)
+        public static MonaAgentSession Create(string id = null)
+        {
+            return new MonaAgentSession()
+            {
+                Id  = id,
+                HAP  = "",
+                PON  = "",
+                Wait = DateTime.Now,
+            };
+        }
+
+        public static MonaAgentSession LoadOrCreate(string id = null)
+        {
+            var instance = Load(id);
+            if (instance == null)
+            {
+                instance = Create(id);
+            }
+            return instance;
+        }
+
+        public static MonaAgentSession Load(string id = null)
+        {
+            _logger.Trace("Load");
+            MonaAgentSession instance = null;
+
+            var path = GetSessionPath(id);
+            if (File.Exists(path))
+            {
+                using (var reader = new StreamReader(path))
+                {
+                    var json = reader.ReadToEnd();
+                    _logger.Trace(json);
+                    instance = JsonConvert.DeserializeObject<MonaAgentSession>(json);
+                }
+            }
+            return instance;
+        }
+
+        public static string GetSessionPath(string id)
         {
             // ディレクトリ
-            var path = PathUtility.GetDataPath()
+            var dir = PathUtility.GetDataPath()
                      + Path.DirectorySeparatorChar + "session";
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(dir);
             }
 
             // ファイル
-            path += Path.DirectorySeparatorChar + id;
+            var fileName = "";
+            if (string.IsNullOrEmpty(id))
+            {
+                fileName = "_default.json";
+            }
+            else if (id.IsAsciiAlphabetAndNumeric())
+            {
+                fileName = id + ".json";
+            }
+            else
+            {
+                throw new NotSupportedException("id");
+            }
+
+            var path = dir + Path.DirectorySeparatorChar + fileName;
 
             return path;
         }
@@ -61,6 +122,8 @@
                 if (disposing)
                 {
                 }
+
+                this.Save();
 
                 _disposed = true;
             }

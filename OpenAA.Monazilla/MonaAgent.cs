@@ -267,7 +267,7 @@
             var cookie = new CookieContainer();
             if (this.Session == null)
             {
-                this.Session = new MonaAgentSession();
+                this.Session = MonaAgentSession.LoadOrCreate();
             }
             if (this.Session.HAP != string.Empty)
             {
@@ -291,6 +291,7 @@
 
             // cookie読み取り
             var cookies = cookie.GetCookies(new Uri(bbsCgi));
+
             if (cookies["HAP"] != null)
             {
                 this.Session.HAP = cookies["HAP"].Value;
@@ -299,6 +300,9 @@
             {
                 this.Session.PON = cookies["PON"].Value;
             }
+
+            // セッション保存
+            this.Session.Save();
 
             // 結果解析
             AnalyzeCreateResponseResult(msg);

@@ -31,10 +31,10 @@
             var t1 = mona.GetCategories();
             t1.Wait();
 
-            var cate = t1.Result.First(x => x.Name == "雑談系２");
+            var cate = t1.Result.First(x => x.Name == "ネット関係");
             Console.WriteLine(cate);
 
-            var board = cate.Boards.First(x => x.Name.Contains("嫌儲"));
+            var board = cate.Boards.First(x => x.Name.Contains("宣伝掲示板"));
             Console.WriteLine(board);
 
             var t2 = mona.GetSubject(board);
@@ -53,17 +53,18 @@
             var t1 = mona.GetCategories();
             t1.Wait();
 
-            var cate = t1.Result.First(x => x.Name == "雑談系２");
+            var cate = t1.Result.First(x => x.Name == "ネット関係");
             Console.WriteLine(cate);
 
-            var board = cate.Boards.First(x => x.Name.Contains("嫌儲"));
+            var board = cate.Boards.First(x => x.Name.Contains("宣伝掲示板"));
             Console.WriteLine(board);
 
             var t2 = mona.GetSubject(board);
             t2.Wait();
             var thread = t2.Result
                 .Where(x => 10 < x.Nums)
-                .OrderByDescending(x => x.CreateTime)
+                //.OrderByDescending(x => x.CreateTime)
+                .Shuffle()
                 .First();
             Console.WriteLine(thread);
 
