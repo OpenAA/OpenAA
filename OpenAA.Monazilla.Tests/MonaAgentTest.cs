@@ -61,15 +61,19 @@
 
             var t2 = mona.GetSubject(board);
             t2.Wait();
-            var thread = t2.Result
-                .Where(x => 10 < x.Nums)
-                //.OrderByDescending(x => x.CreateTime)
-                .Shuffle()
-                .First();
-            Console.WriteLine(thread);
 
-            var t3 = mona.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
-            t3.Wait();
+            for (int i = 0; i < 10; i++)
+            {
+                var thread = t2.Result
+                             //.Where(x => 10 < x.Nums)
+                             //.OrderByDescending(x => x.CreateTime)
+                    .Shuffle()
+                    .First();
+                Console.WriteLine(thread);
+
+                var t3 = mona.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
+                t3.Wait();
+            }
         }
     }
 }

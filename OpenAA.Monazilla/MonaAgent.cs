@@ -226,22 +226,54 @@
 
         public async Task CreateResponse(MonaThread thread, string name, string mail, string message)
         {
-            for (int i = 0; i < 2; i++)
+            for (;;)
             {
-                await CreateResponseCore(thread, name, mail, message);
-                Console.WriteLine(this.Session);
+                var result = await CreateResponseCore(thread, name, mail, message);
+                Console.WriteLine(result.ResultType);
 
-                var wait = (int)(this.Session.Wait - DateTime.Now).TotalSeconds;
-                if (0 < wait)
-                {
-                    Console.WriteLine("wait=" + wait);
-                    Console.Out.Flush();
-                    await Task.Delay(wait * 1000);
+                if (result.ResultType == MonaAgentPostResult.ResultTypes.SUCCEED)
+                {// 書き込み成功
+                    break;
                 }
+                if (result.ResultType == MonaAgentPostResult.ResultTypes.FAILED)
+                {// 書き込み失敗
+                    break;
+                }
+                if (result.ResultType == MonaAgentPostResult.ResultTypes.STOPED)
+                {// 書けないスレ
+                    break;
+                }
+
+                switch (result.ResultType)
+                {
+                    case MonaAgentPostResult.ResultTypes.SUCCEED:
+                        break;
+
+                    case MonaAgentPostResult.ResultTypes.FAILED:
+                        break;
+
+                    case MonaAgentPostResult.ResultTypes.STOPED:
+                        break;
+
+                    case MonaAgentPostResult.ResultTypes.KILLED://やられた
+                    case MonaAgentPostResult.ResultTypes.CONTINUE://
+                        var wait = (int)(this.Session.Wait - DateTime.Now).TotalSeconds;
+                        Console.WriteLine("wait=" + wait);
+                        if (0 < wait)
+                        {
+                            Console.Out.Flush();
+                            await Task.Delay(wait * 1000);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+
             }
         }
 
-        public async Task CreateResponseCore(MonaThread thread, string name, string mail, string message)
+        public async Task<MonaAgentPostResult> CreateResponseCore(MonaThread thread, string name, string mail, string message)
         {
             var domain = thread.Board.Server.Host;
             var bbsCgi = thread.Board.Server + "/test/bbs.cgi?guid=ON";
@@ -301,104 +333,13 @@
                 this.Session.PON = cookies["PON"].Value;
             }
 
+            // 結果解析
+            var result = new MonaAgentPostResult(this.Session, msg);
+
             // セッション保存
             this.Session.Save();
 
-            // 結果解析
-            AnalyzeCreateResponseResult(msg);
-        }
-
-        public void AnalyzeCreateResponseResult(string message)
-        {
-            var now = DateTime.Now;
-            this.Session.Wait = now;
-
-            if (message.Contains("書きこみました"))
-            {
-                //this.ResultType = ResultTypes.SUCCEED;
-                return;
-            }
-            if (message.Contains("書きこみ＆クッキー確認"))
-            {
-                //this.ResultType = ResultTypes.CONTINUE;
-                this.Session.Wait = now.AddSeconds(2);
-                return;
-            }
-            if (message.Contains("たたないと書けません"))
-            {
-//                Session.SambaCount++;
-//                if (3 <= Session.SambaCount)
-//                {
-//                    //this.ResultType = ResultTypes.FAILED;
-//                    return;
-//                }
-//                else
-//                {
-                    // this.ResultType = ResultTypes.CONTINUE;
-                    this.Session.Wait.AddSeconds(120 + 10);
-                    return;
-//                }
-            }
-
-            if (message.Contains("公開ＰＲＯＸＹからの投稿は受け付けていません"))
-            {
-                //this.ResultType = ResultTypes.FAILED;
-                return;
-            }
-            if (message.Contains("バーボン"))
-            {
-                //this.ResultType = ResultTypes.FAILED;
-                return;
-            }
-
-            if (message.Contains("このスレッドには書き込めません"))
-            {
-                //this.ResultType = ResultTypes.STOPED;
-                return;
-            }
-            if (message.Contains("このスレッドは512kを超えているので書けません"))
-            {
-                //this.ResultType = ResultTypes.STOPED;
-                return;
-            }
-
-            if (message.Contains("貴方の忍法帖を作成します"))
-            {
-                //this.ResultType = ResultTypes.CONTINUE;
-                //this.Wait = 120;
-                this.Session.Wait.AddSeconds(120);
-                return;
-            }
-            if (message.Contains("修行が足りません"))
-            {
-//                Session.NinjaCount++;
-//                if (3 <= Session.NinjaCount)
-//                {
-//                    this.ResultType = ResultTypes.FAILED;
-//                    return;
-//                }
-//                else
-//                {
-//                    //this.ResultType = ResultTypes.CONTINUE;
-                    this.Session.Wait.AddSeconds(120);
-                    return;
-//                }
-            }
-            if (message.Contains("忍法帖発行から"))
-            {
-                //this.ResultType = ResultTypes.CONTINUE;
-                this.Session.Wait.AddSeconds(62);
-                return;
-            }
-            if (message.Contains("やられたでござる"))
-            {
-                //this.ResultType = ResultTypes.KILLED;
-                this.Session.Wait.AddSeconds(30);
-                return;
-            }
-
-            // unknown error
-            //this.ResultType = ResultTypes.FAILED;
+            return result;
         }
     }
 }

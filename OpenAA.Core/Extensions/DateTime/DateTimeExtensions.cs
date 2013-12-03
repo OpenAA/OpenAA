@@ -112,6 +112,13 @@
 
             return new DateTime(work.Year, work.Month, fixedCutOff).EndOfDay();
         }
+
+        public static double ToUnixTime(this DateTime source)
+        {
+            var utc = source.ToUniversalTime();
+            var elapsed = utc - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return elapsed.TotalSeconds;
+        }
     }
 }
 
