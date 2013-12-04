@@ -42,13 +42,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MonaAgent.cs" />
     <Compile Include="Models\MonaBoard.cs" />
-    <Compile Include="Models\MonaCategory.cs" />
     <Compile Include="Models\MonaThread.cs" />
     <Compile Include="Models\MonaResponse.cs" />
     <Compile Include="MonaAgentSession.cs" />
     <Compile Include="MonaAgentPostResult.cs" />
+    <Compile Include="MonaAgent.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

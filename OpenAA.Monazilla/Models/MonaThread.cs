@@ -78,8 +78,15 @@
             }
         }
 
+        /// <summary>
+        /// Gets or sets the responses.
+        /// </summary>
+        /// <value>The responses.</value>
         public IList<MonaResponse> Responses { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OpenAA.Monazilla.Models.MonaThread"/> class.
+        /// </summary>
         public MonaThread()
         {
             this.Responses = new List<MonaResponse>();
@@ -87,7 +94,7 @@
 
         public override string ToString()
         {
-            return string.Format("[MonaThread: Board={0}, No={1}, Id={2}, Title={3}, Nums={4}, CreateTime={5}, UpdateTime={6}, Trend={7}]", Board, No, Id, Title, Nums, CreateTime, UpdateTime, Trend);
+            return string.Format("[MonaThread: Board={0}, No={1}, Id={2}, Title={3}, Nums={4}, CreateTime={5}, UpdateTime={6}, Trend={7}, Responses={8}]", Board, No, Id, Title, Nums, CreateTime, UpdateTime, Trend, Responses);
         }
     }
 

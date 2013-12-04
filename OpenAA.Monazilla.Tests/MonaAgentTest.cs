@@ -9,37 +9,75 @@
     [TestFixture()]
     public class MonaAgentTest
     {
-        [Test()]
-        public void GetCategories()
+        [Test]
+        public void GetBbsMenuHtml()
         {
-            var mona = new MonaAgent();
-            var task = mona.GetCategories();
-            task.Wait();
+            var agent = new MonaAgent();
+            var t1 = agent.GetBbsMenuHtml();
+            t1.Wait();
+            Console.WriteLine(t1.Result);
+        }
 
-            foreach (var cate in task.Result)
+        [Test()]
+        public void GetBoards()
+        {
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
+            t1.Wait();
+
+            foreach (var board in t1.Result)
             {
-                Console.WriteLine(cate);
+                Console.WriteLine(board);
             }
+        }
 
-            NUnit.Framework.Assert.IsNotEmpty(task.Result);
+        [Test]
+        public void GetBoard1()
+        {
+            var agent = new MonaAgent();
+            var task1 = agent.GetBoard("http://engawa.2ch.net/poverty/");
+            task1.Wait();
+            var board = task1.Result;
+            Assert.IsNotNull(board);
+        }
+
+        [Test]
+        public void GetBoard2()
+        {
+            var agent = new MonaAgent();
+            var task1 = agent.GetBoard("http://engawa.2ch.net/test/read.cgi/poverty/1386076505/");
+            task1.Wait();
+            var board = task1.Result;
+            Assert.IsNotNull(board);
         }
 
         [Test]
         public void GetSubject()
         {
-            var mona = new MonaAgent();
-            var t1 = mona.GetCategories();
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
             t1.Wait();
-
-            var cate = t1.Result.First(x => x.Name == "ネット関係");
-            Console.WriteLine(cate);
-
-            var board = cate.Boards.First(x => x.Name.Contains("宣伝掲示板"));
+            var board = t1.Result.First(x => x.Id == "ad");
             Console.WriteLine(board);
 
-            var t2 = mona.GetSubject(board);
-            t2.Wait();
-            var threads = t2.Result;
+            var t2a = agent.GetSubject(board);
+            t2a.Wait();
+
+            Assert.IsNotEmpty(t2a.Result);
+        }
+
+        [Test]
+        public void GetThreads()
+        {
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
+            t1.Wait();
+            var board = t1.Result.First(x => x.Id == "ad");
+            Console.WriteLine(board);
+
+            var task2 = agent.GetThreads(board);
+            task2.Wait();
+            var threads = task2.Result;
             foreach (var thread in threads)
             {
                 Console.WriteLine(thread);
@@ -49,31 +87,18 @@
         [Test]
         public void CreateResponse()
         {
-            var mona = new MonaAgent();
-            var t1 = mona.GetCategories();
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
             t1.Wait();
-
-            var cate = t1.Result.First(x => x.Name == "ネット関係");
-            Console.WriteLine(cate);
-
-            var board = cate.Boards.First(x => x.Name.Contains("宣伝掲示板"));
+            var board = t1.Result.First(x => x.Id == "ad");
             Console.WriteLine(board);
 
-            var t2 = mona.GetSubject(board);
-            t2.Wait();
+            var task2 = agent.GetThreads(board);
+            task2.Wait();
+            var thread = task2.Result.First(x => 10 < x.Nums);
 
-            for (int i = 0; i < 10; i++)
-            {
-                var thread = t2.Result
-                             //.Where(x => 10 < x.Nums)
-                             //.OrderByDescending(x => x.CreateTime)
-                    .Shuffle()
-                    .First();
-                Console.WriteLine(thread);
-
-                var t3 = mona.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
-                t3.Wait();
-            }
+            var task3 = agent.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
+            task3.Wait();
         }
     }
 }

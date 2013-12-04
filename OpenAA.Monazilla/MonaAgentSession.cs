@@ -2,16 +2,16 @@
 {
     using System;
     using System.IO;
-
+    using System.Collections.Generic;
+    using Newtonsoft.Json;
+    using NLog;
     using OpenAA.IO;
     using OpenAA.Extensions.String;
 
-    using Newtonsoft.Json;
-    using NLog;
-
     public class MonaAgentSession : IDisposable
     {
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        [JsonIgnore]
+        public MonaAgent Agent { get; private set; }
 
         public string Id { get; set; }
 
@@ -19,121 +19,122 @@
 
         public string PON { get; set; }
 
-        public DateTime Wait { get; set; }
+        private IDictionary<string,DateTime> _wait;
+        public  IDictionary<string,DateTime> Wait 
+        { 
+            get 
+            { 
+                if (_wait == null )
+                {
+                    _wait = new Dictionary<string, DateTime>();
+                }
+                return _wait;
+            }
+            set { _wait = value; }
+        }
+
+        private IDictionary<string,int> _sambaLimit;
+        public  IDictionary<string,int> SambaLimit 
+        { 
+            get 
+            { 
+                if (_sambaLimit == null )
+                {
+                    _sambaLimit = new Dictionary<string, int>();
+                }
+                return _sambaLimit;
+            }
+            set { _sambaLimit = value; }
+        }
+
+        private IDictionary<string,int> _sambaCount;
+        public  IDictionary<string,int> SambaCount
+        { 
+            get 
+            { 
+                if (_sambaCount == null )
+                {
+                    _sambaCount = new Dictionary<string, int>();
+                }
+                return _sambaCount;
+            }
+            set { _sambaCount = value; }
+        }
 
         private MonaAgentSession()
         {
+            // 永続化のため、引数はなし。
+            // 初期化はCreateメソッドで。
+        }
+
+        ~MonaAgentSession()
+        {
+            this.Dispose();
+        }
+
+        public void Dispose()
+        {
+            this.Save();
         }
 
         public void Save()
         {
-            _logger.Trace("Save");
             var json = JsonConvert.SerializeObject(this, Formatting.Indented);
-            var path = GetSessionPath(this.Id);
-            using (var writer = new StreamWriter(path))
-            {
-                writer.Write(json);
-            }
+            var path = MonaAgentSession.GetSessionPath(this.Agent, this.Id);
+            FileUtility.Write(path, json);
         }
 
-        public static MonaAgentSession Create(string id = null)
+        public static MonaAgentSession Create(MonaAgent agent, string id = null)
         {
-            return new MonaAgentSession()
-            {
-                Id  = id,
-                HAP  = "",
-                PON  = "",
-                Wait = DateTime.Now,
-            };
-        }
-
-        public static MonaAgentSession LoadOrCreate(string id = null)
-        {
-            var instance = Load(id);
+            var instance = Load(agent, id);
             if (instance == null)
             {
-                instance = Create(id);
-            }
-            return instance;
-        }
-
-        public static MonaAgentSession Load(string id = null)
-        {
-            _logger.Trace("Load");
-            MonaAgentSession instance = null;
-
-            var path = GetSessionPath(id);
-            if (File.Exists(path))
-            {
-                using (var reader = new StreamReader(path))
+                instance = new MonaAgentSession
                 {
-                    var json = reader.ReadToEnd();
-                    _logger.Trace(json);
-                    instance = JsonConvert.DeserializeObject<MonaAgentSession>(json);
-                }
+                    Id = id,
+                    HAP = "",
+                    PON = "",
+                    Wait = new Dictionary<string,DateTime>(),
+                    SambaLimit = new Dictionary<string,int>(),
+                    SambaCount = new Dictionary<string,int>(),
+                };
+            }
+
+            // これ重要
+            instance.Agent = agent;
+
+            return instance;
+        }
+
+        public static MonaAgentSession Load(MonaAgent agent, string id = null)
+        {
+            MonaAgentSession instance = null;
+            var path = GetSessionPath(agent, id);
+            var json = FileUtility.ReadToEnd(path);
+            if (!string.IsNullOrEmpty(json))
+            {
+                instance = JsonConvert.DeserializeObject<MonaAgentSession>(json);
             }
             return instance;
         }
 
-        public static string GetSessionPath(string id)
+        public static string GetSessionPath(MonaAgent agent, string id = null)
         {
-            // ディレクトリ
-            var dir = PathUtility.GetDataPath()
-                     + Path.DirectorySeparatorChar + "session";
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            // ファイル
-            var fileName = "";
+            var filename = "";
             if (string.IsNullOrEmpty(id))
             {
-                fileName = "_default.json";
+                filename = "_default.json";
             }
             else if (id.IsAsciiAlphabetAndNumeric())
             {
-                fileName = id + ".json";
+                filename = id + ".json";
             }
             else
             {
-                throw new NotSupportedException("id");
+                throw new NotSupportedException("id='" + id + "'");
             }
 
-            var path = dir + Path.DirectorySeparatorChar + fileName;
-
-            return path;
-        }
-
-        #region IDisposable implementation
-
-        private bool _disposed = false;
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-            System.GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                }
-
-                this.Save();
-
-                _disposed = true;
-            }
-        }
-
-        #endregion
-
-        public override string ToString()
-        {
-            return string.Format("[MonaAgentSession: Id={0}, HAP={1}, PON={2}, Wait={3}]", Id, HAP, PON, Wait);
+            return agent.SessionDirectory + Path.DirectorySeparatorChar + filename;
         }
     }
 }

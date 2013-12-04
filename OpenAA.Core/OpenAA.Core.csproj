@@ -59,6 +59,7 @@
     <Compile Include="DoubleUtility.cs" />
     <Compile Include="Int32Utility.cs" />
     <Compile Include="Net\Http\DictionaryContent.cs" />
+    <Compile Include="IO\FileUtility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

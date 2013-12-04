@@ -7,6 +7,8 @@
 
     using OpenAA.Extensions.DateTime;
 
+    using OpenAA.Monazilla.Models;
+
     public class MonaAgentPostResult
     {
         public enum ResultTypes {
@@ -37,15 +39,21 @@
         }
 
         public ResultTypes ResultType { get; private set; }
+        public MonaBoard Board { get; private set; }
         public MonaAgentSession Session { get; private set; }
         public string Message { get; private set; }
 
-        public MonaAgentPostResult(MonaAgentSession session, string message)
+        public MonaAgentPostResult(MonaBoard board, MonaAgentSession session, string message)
         {
+            if (board == null)
+            {
+                throw new ArgumentNullException("board");
+            }
             if (session == null)
             {
                 throw new ArgumentNullException("session");
             }
+            this.Board = board;
             this.Session = session;
             this.Message = message;
             this.AnalyzeMessage();
@@ -54,14 +62,15 @@
         private void AnalyzeMessage()
         {
             var message = this.Message;
-            var now = DateTime.Now;
+            var now   = DateTime.Now;
+            var host = new Uri(this.Board.Server).Host;
 
             // ----
             // 成功
             if (message.Contains("書きこみました"))
             {
                 this.ResultType = ResultTypes.SUCCEED;
-                this.Session.Wait = now;
+                this.Session.Wait[host] = now;
                 return;
             }
 
@@ -70,7 +79,7 @@
             if (message.Contains("■ 書き込み確認 ■"))
             {
                 this.ResultType = ResultTypes.CONTINUE;
-                this.Session.Wait = now.AddSeconds(1);
+                this.Session.Wait[host] = now.AddSeconds(1);
                 return;
             }
 
@@ -79,7 +88,7 @@
             if (message.Contains("ようこそ：貴方の忍法帖を作成します。"))
             {
                 this.ResultType = ResultTypes.CONTINUE;
-                this.Session.Wait = now.AddSeconds(30);
+                this.Session.Wait[host] = now.AddSeconds(30);
                 return;
             }
 
@@ -93,7 +102,9 @@
                 var samba = int.Parse(mSamba.Groups["samba"].Value);
                 var count = int.Parse(mSamba.Groups["count"].Value);
                 //var lapse = int.Parse(mSamba.Groups["lapse"].Value);
-                this.Session.Wait = now.AddSeconds(samba + count + 1);
+                this.Session.Wait[host] = now.AddSeconds(samba + count + 1);
+                this.Session.SambaLimit[host] = samba;
+                this.Session.SambaCount[host] = count;
                 return;
             }
 
@@ -101,7 +112,7 @@
             if (message.Contains("599 連打しないでください。"))
             {
                 this.ResultType = ResultTypes.FAILED;
-                this.Session.Wait = now.AddSeconds(600);
+                this.Session.Wait[host] = now.AddSeconds(600);
                 return;
             }
 
@@ -109,13 +120,13 @@
             if (message.Contains("ＥＲＲＯＲ：連続投稿ですか？？"))
             {
                 this.ResultType = ResultTypes.FAILED;
-                this.Session.Wait = now.AddSeconds(600);
+                this.Session.Wait[host] = now.AddSeconds(600);
                 return;
             }
             if (message.Contains("ＥＲＲＯＲ：連続投稿ですね！！"))
             {
                 this.ResultType = ResultTypes.FAILED;
-                this.Session.Wait = now.AddSeconds(1200);
+                this.Session.Wait[host] = now.AddSeconds(1200);
                 return;
             }
 
@@ -124,13 +135,13 @@
             if (message.Contains("ＥＲＲＯＲ：このスレッドには書き込めません。"))
             {
                 this.ResultType = ResultTypes.STOPED;
-                this.Session.Wait = now;
+                this.Session.Wait[host] = now;
                 return;
             }
             if (message.Contains("ＥＲＲＯＲ：このスレッドは512kを超えているので書けません。"))
             {
                 this.ResultType = ResultTypes.STOPED;
-                this.Session.Wait = now;
+                this.Session.Wait[host] = now;
                 return;
             }
 
@@ -155,7 +166,7 @@
             }
 
             this.ResultType = ResultTypes.FAILED;
-            this.Session.Wait = now;
+            this.Session.Wait[host] = now;
         }
 
         public override string ToString()

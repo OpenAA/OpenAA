@@ -1,27 +1,19 @@
 ﻿<Properties GitUserInfo="UsingMD">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="OpenAA.Core/IO/PathUtility.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="OpenAA.Monazilla/MonaAgent.cs">
     <Files>
-      <File FileName="OpenAA.Monazilla.Tests/Test.cs" Line="17" Column="1" />
-      <File FileName="OpenAA.Monazilla/MonaAgent.cs" Line="87" Column="39" />
-      <File FileName="OpenAA.Core/IO/PathUtility.cs" Line="31" Column="45" />
+      <File FileName="OpenAA.Monazilla/MonaAgent.cs" Line="331" Column="37" />
+      <File FileName="OpenAA.Monazilla.Tests/MonaAgentTest.cs" Line="100" Column="13" />
     </Files>
     <Pads>
       <Pad Id="MonoDevelop.NUnit.TestPad">
         <State expanded="True">
-          <Node name="OpenAA.Core.Tests" expanded="True">
-            <Node name="OpenAA" expanded="True">
-              <Node name="Tests" expanded="True">
-                <Node name="Test" expanded="True" />
-              </Node>
-            </Node>
-          </Node>
           <Node name="OpenAA.Monazilla.Tests" expanded="True">
             <Node name="OpenAA" expanded="True">
               <Node name="Monazilla" expanded="True">
                 <Node name="Tests" expanded="True">
-                  <Node name="Test" expanded="True">
-                    <Node name="TestCase" selected="True" />
+                  <Node name="MonaAgentTest" expanded="True">
+                    <Node name="CreateResponse" selected="True" />
                   </Node>
                 </Node>
               </Node>

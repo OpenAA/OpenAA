@@ -1,4 +1,4 @@
-﻿namespace OpenAA.Monazilla
+namespace OpenAA.Monazilla
 {
     using System;
     using System.Collections.Generic;
@@ -21,119 +21,116 @@
 
     public class MonaAgent
     {
+        /// <summary>
+        /// The logger.
+        /// </summary>
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
+        // ----------------------------------------------------------------
+        // 板一覧
+
+        /// <summary>
+        /// bbsmenu.htmlのカテゴリ行
+        /// </summary>
         private static readonly Regex RegexBbsMenuCategory = new Regex(
             @"<BR><BR><B>(?<cate>.+?)<\/B><BR>",
             RegexOptions.IgnoreCase | 
             RegexOptions.Singleline | 
             RegexOptions.Compiled);
 
+        /// <summary>
+        /// bbsmenu.htmlの板行
+        /// </summary>
         private static readonly Regex RegexBbsMenuBoard = new Regex(
             @"<A HREF=(?<serv>http:\/\/.*(\.2ch\.net|\.bbspink\.com|\.machi\.to))\/(?<code>[^\s]*).*>(?<name>.+)<\/A>",
             RegexOptions.IgnoreCase | 
             RegexOptions.Singleline | 
             RegexOptions.Compiled);
 
+        /// <summary>
+        /// subject.txtの1行
+        /// </summary>
         private static readonly Regex RegexSubject = new Regex(
             @"(?<id>[0-9]*).dat\<\>(?<title>.*?)\((?<nums>[0-9]*)\)", 
             RegexOptions.IgnoreCase | 
             RegexOptions.Singleline | 
             RegexOptions.Compiled);
 
-
+        /// <summary>
+        /// bbsmenu.htmlから除外するカテゴリ
+        /// </summary>
         private static readonly List<string> IgnoreCategories = new List<string>{ "特別企画", "チャット", "ツール類" };
 
+        /// <summary>
+        /// bbsmenu.htmlから除外する板
+        /// </summary>
         private static readonly List<string> IgnoreBoards     = new List<string>{ "2chプロジェクト", "いろいろランク" };
 
-        public async Task<IList<MonaCategory>> GetCategories()
+        /// <summary>
+        /// Gets the bbsmenu.html.
+        /// </summary>
+        /// <returns>The bbs menu html.</returns>
+        public async Task<string> GetBbsMenuHtml()
         {
-            var html = "";
-            html = await GetBbsMenuFromCache();
+            var html = GetBbsMenuFromCache();
             if (string.IsNullOrEmpty(html))
             {
                 html = await GetBbsMenuFromOnline();
             }
-            var categories = ParseBbsMenu(html);
-            return categories;
+            return html;
         }
 
         public async Task<string> GetBbsMenuFromOnline(string bbsMenuUri = "http://menu.2ch.net/bbsmenu.html", bool doNotSaveToCache = false)
         {
-            var agent = new HttpAgent();
-            var html = await agent.GetStringWithAutoDetectEncodingAsync(bbsMenuUri);
+            // 受信
+            var html = "";
+            using (var agent = new HttpAgent())
+            {
+                html = await agent.GetStringWithAutoDetectEncodingAsync(bbsMenuUri);
+            }
 
+            // キャッシュ保存
             if (!doNotSaveToCache)
             {
-                var path = GetBbsMenuCachePath();
-                Console.WriteLine(path);
-                var dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                using (var sw = new StreamWriter(path))
-                {
-                    await sw.WriteAsync(html);
-                }
+                var path = this.GetBbsMenuCachePath();
+                FileUtility.Write(path, html);
             }
 
             return html;
         }
 
-        public async Task<string> GetBbsMenuFromCache()
+        public string GetBbsMenuFromCache()
         {
-            var html = "";
-            var path = GetBbsMenuCachePath();
-            if (File.Exists(path))
-            {
-                using (var sr = new StreamReader(path))
-                {
-                    html = await sr.ReadToEndAsync();
-                }
-            }
+            var path = this.GetBbsMenuCachePath();
+            var html = FileUtility.ReadToEnd(path);
             return html;
         }
 
-        public string GetBbsMenuCachePath()
+        public IList<MonaBoard> ParseBbsMenu(string bbsMenuHtml)
         {
-            var path = PathUtility.GetDataPath() + Path.DirectorySeparatorChar + "bbsmenu.html";
-            return path;
-        }
+            var boards = new List<MonaBoard>();
 
-        public IList<MonaCategory> ParseBbsMenu(string bbsMenuHtml)
-        {
-            var categories = new List<MonaCategory>();
-
-            var category = new MonaCategory();
+            string cate = "";
             string serv = "";
             string code = "";
             string name = "";
 
             foreach (var line in bbsMenuHtml.SplitToLines())
             {
-                // カテゴリー行か？
+                // カテゴリ行か？
                 var match = RegexBbsMenuCategory.Match(line);
                 if (match.Success)
                 {
-                    var cate = match.Groups["cate"].Value;
+                    cate = match.Groups["cate"].Value;
                     if (IgnoreCategories.Contains(cate))
                     {
-                        category = null;
-                    }
-                    else
-                    {
-                        category = new MonaCategory
-                        {
-                            Name = cate
-                        };
-                        categories.Add(category);
+                        cate = null;
                     }
                     _logger.Trace("cate=" + cate);
                     continue;
                 }
                 // カテゴリーが選択されているか？
-                if (category == null)
+                if (string.IsNullOrEmpty(cate))
                 {
                     continue;
                 }
@@ -157,35 +154,124 @@
                     }
                     var board = new MonaBoard
                     {
-                        Category = category,
-                        Server = new Uri(serv),
+                        Category = cate,
+                        Server = serv,
                         Id = code,
                         Name = name
                     };
                     _logger.Trace(board);
 
-                    category.Boards.Add(board);
+                    boards.Add(board);
                 }
             }
 
-            return categories;
+            return boards;
         }
 
-        // ------------------------------------------------------------
-
-        public async Task<IList<MonaThread>> GetSubject(MonaBoard board)
+        /// <summary>
+        /// 板一覧を取得する。
+        /// </summary>
+        /// <returns>The boards.</returns>
+        public async Task<IList<MonaBoard>> GetBoards()
         {
-            var url = new Uri(board.Server + "/" + board.Id + "/subject.txt");
-            _logger.Trace(url);
+            var html = await GetBbsMenuHtml();
+            var boards = ParseBbsMenu(html);
+            return boards;
+        }
 
-            var subject = "";
-            using (var agent = new HttpAgent())
+        /// <summary>
+        /// 板を取得する
+        /// </summary>
+        /// <returns>The board.</returns>
+        /// <param name="url">URL.</param>
+        public async Task<MonaBoard> GetBoard(string url)
+        {
+            var server = "";
+            var boardId = "";
+            var m1 = Regex.Match(url, @"^(?<server>http:\/\/.*(\.2ch\.net|\.bbspink\.com|\.machi\.to))\/test\/read.cgi\/(?<board>[^\s|\/]*)");
+            if (m1.Success)
             {
-                subject = await agent.GetStringWithAutoDetectEncodingAsync(url);
+                server = m1.Groups["server"].Value;
+                boardId = m1.Groups["board"].Value;
+            }
+            else
+            {
+                var m2 = Regex.Match(url, @"^(?<server>http:\/\/.*(\.2ch\.net|\.bbspink\.com|\.machi\.to))\/(?<board>[0-9a-zA-Z\-_]+)");
+                if (m2.Success)
+                {
+                    server  = m2.Groups["server"].Value;
+                    boardId = m2.Groups["board"].Value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return await GetBoard(server, boardId);
+        }
+
+        /// <summary>
+        /// 板を取得する
+        /// </summary>
+        /// <returns>The board.</returns>
+        /// <param name="server">Server.</param>
+        /// <param name="boardId">Board identifier.</param>
+        public async Task<MonaBoard> GetBoard(string server, string boardId)
+        {
+            var host = new Uri(server).Host;
+            var boards = await this.GetBoards();
+            return boards.FirstOrDefault(x => new Uri(x.Server).Host == host && x.Id == boardId);
+        }
+
+        // ----------------------------------------------------------------
+
+        public int SubjectCacheExpire = 120;
+
+        public async Task<string> GetSubject(MonaBoard board)
+        {
+            var text = GetSubjectFromCache(board);
+            if (string.IsNullOrEmpty(text))
+            {
+                text = await GetSubjectFromOnline(board);
+            }
+            return text;
+        }
+
+        public string GetSubjectFromCache(MonaBoard board)
+        {
+            var path = this.GetSubjectCachePath(board);
+            if (!File.Exists(path))
+            {
+                return string.Empty;
             }
 
-            var threads = ParseSubject(board, subject);
-            return threads;
+            var last = File.GetLastWriteTime(path);
+            var expr = last.AddSeconds(this.SubjectCacheExpire) - DateTime.Now;
+            if (expr.TotalSeconds < 0)
+            {
+                return string.Empty;
+            }
+
+            var text = FileUtility.ReadToEnd(path);
+            return text;
+        }
+
+        public async Task<string> GetSubjectFromOnline(MonaBoard board, bool doNotSaveToCache = false)
+        {
+            var url = new Uri(board.Server + "/" + board.Id + "/subject.txt");
+            var text = "";
+            using (var agent = new HttpAgent())
+            {
+                text = await agent.GetStringWithAutoDetectEncodingAsync(url);
+            }
+
+            if (!doNotSaveToCache)
+            {
+                var path = this.GetSubjectCachePath(board);
+                FileUtility.Write(path, text);
+            }
+
+            return text;
         }
 
         public IList<MonaThread> ParseSubject(MonaBoard board, string subject)
@@ -196,8 +282,6 @@
 
             foreach (var line in subject.SplitToLines())
             {
-                _logger.Trace(line);
-
                 var match = RegexSubject.Match(line);
                 if (!match.Success)
                 {
@@ -207,8 +291,8 @@
 
                 var thread = new MonaThread
                 {
-                    Board = board,
                     No    = cnt++,
+                    Board = board,
                     Id    = match.Groups["id"].Value,
                     Title = match.Groups["title"].Value,
                     Nums  = Int32Utility.ParseOrDefault(match.Groups["nums"].Value),
@@ -220,16 +304,35 @@
             return threads;
         }
 
-        // ------------------------------------------------------------
+        public async Task<IList<MonaThread>> GetThreads(MonaBoard board)
+        {
+            var subject = await this.GetSubject(board);
+            var threads = this.ParseSubject(board, subject);
+            return threads;
+        }
 
-        private MonaAgentSession Session { get; set; }
+        public async Task<IList<MonaThread>> GetThreads(string server, string boardId)
+        {
+            var board = await this.GetBoard(server, boardId);
+            if (board == null)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            return await this.GetThreads(board);
+        }
+
+        // ----------------------------------------------------------------
+        // レス投稿
 
         public async Task CreateResponse(MonaThread thread, string name, string mail, string message)
         {
+            var host = new Uri(thread.Board.Server).Host;
+
             for (;;)
             {
                 var result = await CreateResponseCore(thread, name, mail, message);
-                Console.WriteLine(result.ResultType);
+                Console.Out.WriteLine(result);
+                Console.Out.Flush();
 
                 if (result.ResultType == MonaAgentPostResult.ResultTypes.SUCCEED)
                 {// 書き込み成功
@@ -244,38 +347,25 @@
                     break;
                 }
 
-                switch (result.ResultType)
+                if (result.ResultType == MonaAgentPostResult.ResultTypes.KILLED || //やられた
+                    result.ResultType == MonaAgentPostResult.ResultTypes.CONTINUE)
                 {
-                    case MonaAgentPostResult.ResultTypes.SUCCEED:
-                        break;
-
-                    case MonaAgentPostResult.ResultTypes.FAILED:
-                        break;
-
-                    case MonaAgentPostResult.ResultTypes.STOPED:
-                        break;
-
-                    case MonaAgentPostResult.ResultTypes.KILLED://やられた
-                    case MonaAgentPostResult.ResultTypes.CONTINUE://
-                        var wait = (int)(this.Session.Wait - DateTime.Now).TotalSeconds;
-                        Console.WriteLine("wait=" + wait);
-                        if (0 < wait)
+                    if (this.Session.Wait.ContainsKey(host))
+                    {
+                        var span = (int)(this.Session.Wait[host] - DateTime.Now).TotalSeconds;
+                        if (0 < span)
                         {
                             Console.Out.Flush();
-                            await Task.Delay(wait * 1000);
+                            await Task.Delay(span * 1000);
                         }
-                        break;
-
-                    default:
-                        break;
+                    }
                 }
-
             }
         }
 
         public async Task<MonaAgentPostResult> CreateResponseCore(MonaThread thread, string name, string mail, string message)
         {
-            var domain = thread.Board.Server.Host;
+            var domain = new Uri(thread.Board.Server).Host;
             var bbsCgi = thread.Board.Server + "/test/bbs.cgi?guid=ON";
 
             // 投稿データ
@@ -297,10 +387,6 @@
 
             // cookie書き込み
             var cookie = new CookieContainer();
-            if (this.Session == null)
-            {
-                this.Session = MonaAgentSession.LoadOrCreate();
-            }
             if (this.Session.HAP != string.Empty)
             {
                 cookie.Add(new Cookie("HAP", this.Session.HAP, "/", domain));
@@ -334,12 +420,106 @@
             }
 
             // 結果解析
-            var result = new MonaAgentPostResult(this.Session, msg);
+            var result = new MonaAgentPostResult(thread.Board, this.Session, msg);
 
             // セッション保存
             this.Session.Save();
 
             return result;
+        }
+
+        // ----------------------------------------------------------------
+
+        public void GetReponses(string server, string boardId, string threadId)
+        {
+            throw new NotImplementedException();
+        }
+
+        // ----------------------------------------------------------------
+        // セッション
+
+        private MonaAgentSession _session;
+
+        public MonaAgentSession Session
+        {
+            get 
+            {
+                if (_session == null)
+                {
+                    _session = MonaAgentSession.Create(this); 
+                }
+                return _session; 
+            }
+            set 
+            { 
+                _session = value; 
+            }
+        }
+
+        public void SaveSession()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LoadSession()
+        {
+            throw new NotImplementedException();
+        }
+
+        // ----------------------------------------------------------------
+        // ディレクトリ
+
+        private string _dataDirectory;
+
+        public string DataDirectory 
+        { 
+            get 
+            {
+                if (string.IsNullOrEmpty(_dataDirectory))
+                {
+                    _dataDirectory = PathUtility.GetDataPath();
+                }
+                return _dataDirectory;
+            }
+            set { _dataDirectory = value; }
+        }
+
+        public string SessionDirectory { 
+            get 
+            { 
+                var dir = this.DataDirectory + Path.DirectorySeparatorChar + "session"; 
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                return dir;
+            } 
+        }
+
+        public string CacheDirectory
+        { 
+            get
+            { 
+                var dir = this.DataDirectory + Path.DirectorySeparatorChar + "cache"; 
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                return dir;
+            } 
+        }
+
+        public string GetBbsMenuCachePath()
+        {
+            return this.CacheDirectory
+                + Path.DirectorySeparatorChar + "bbsmenu.html";
+        }
+
+        public string GetSubjectCachePath(MonaBoard board)
+        {
+            return this.CacheDirectory
+                + Path.DirectorySeparatorChar + board.Id
+                + Path.DirectorySeparatorChar + "subject.txt";
         }
     }
 }

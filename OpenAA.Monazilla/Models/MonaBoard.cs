@@ -12,12 +12,12 @@
         /// カテゴリ名
         /// bbsmenu.htmlに含まれる日本語表記
         /// </summary>
-        public MonaCategory Category { get; set; }
+        public string Category { get; set; }
 
         /// <summary>
         /// サーバーのURL
         /// </summary>
-        public Uri Server { get; set; }
+        public string Server { get; set; }
 
         /// <summary>
         /// 板ID
@@ -31,8 +31,15 @@
         /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// スレ一覧
+        /// </summary>
+        /// <value>The threads.</value>
         public IList<MonaThread> Threads { get; set; }
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
         public MonaBoard()
         {
             this.Threads = new List<MonaThread>();
