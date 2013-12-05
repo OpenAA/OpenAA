@@ -358,7 +358,6 @@ namespace OpenAA.Monazilla
                         var span = (int)(this.Session.Wait[host] - DateTime.Now).TotalSeconds;
                         if (0 < span)
                         {
-                            Console.Out.Flush();
                             await Task.Delay(span * 1000);
                         }
                     }

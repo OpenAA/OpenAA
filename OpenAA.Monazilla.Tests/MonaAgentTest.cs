@@ -96,7 +96,9 @@
 
             var task2 = agent.GetThreads(board);
             task2.Wait();
-            var thread = task2.Result.First(x => 10 < x.Nums);
+            var thread = task2.Result
+                .OrderByDescending(x => x.Trend)
+                .First(x => 10 < x.Nums && x.Nums < 1000);
 
             var task3 = agent.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
             task3.Wait();
@@ -112,7 +114,9 @@
 
             var task2 = agent.GetThreads(board);
             task2.Wait();
-            var thread = task2.Result.First(x => 10 < x.Nums);
+            var thread = task2.Result
+                .OrderByDescending(x => x.Trend)
+                .First(x => 10 < x.Nums && x.Nums < 1000);
             Console.WriteLine(thread);
 
             var task3 = agent.GetDat(thread);
