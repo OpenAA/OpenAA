@@ -134,7 +134,7 @@
                 throw new NotSupportedException("id='" + id + "'");
             }
 
-            return agent.SessionDirectory + Path.DirectorySeparatorChar + filename;
+            return agent.GetSessionDirectory() + Path.DirectorySeparatorChar + filename;
         }
     }
 }

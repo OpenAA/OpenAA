@@ -38,6 +38,7 @@
             var task1 = agent.GetBoard("http://engawa.2ch.net/poverty/");
             task1.Wait();
             var board = task1.Result;
+            Console.WriteLine(board);
             Assert.IsNotNull(board);
         }
 
@@ -99,6 +100,38 @@
 
             var task3 = agent.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
             task3.Wait();
+        }
+
+        [Test]
+        public void GetDat()
+        {
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
+            t1.Wait();
+            var board = t1.Result.First(x => x.Id == "ad");
+
+            var task2 = agent.GetThreads(board);
+            task2.Wait();
+            var thread = task2.Result.First(x => 10 < x.Nums);
+            Console.WriteLine(thread);
+
+            var task3 = agent.GetDat(thread);
+            task3.Wait();
+
+            var task4 = agent.CreateResponse(thread, "はげ", "hage", "はげちゃびん");
+            task4.Wait();
+
+            var task5 = agent.GetDat(thread);
+            task5.Wait();
+        }
+    }
+
+    public static class TaskExtensions
+    {
+        public static System.Threading.Tasks.Task<T> Wait2<T>(this System.Threading.Tasks.Task<T> task)
+        {
+            task.Wait();
+            return task;
         }
     }
 }

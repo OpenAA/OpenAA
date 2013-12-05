@@ -80,20 +80,22 @@ namespace OpenAA.Monazilla
             return html;
         }
 
-        public async Task<string> GetBbsMenuFromOnline(string bbsMenuUri = "http://menu.2ch.net/bbsmenu.html", bool doNotSaveToCache = false)
+        public async Task<string> GetBbsMenuFromOnline(string url = "http://menu.2ch.net/bbsmenu.html", bool doNotSaveToCache = false)
         {
+            var encoding = Encoding.GetEncoding("shift_jis");
+
             // 受信
             var html = "";
             using (var agent = new HttpAgent())
             {
-                html = await agent.GetStringWithAutoDetectEncodingAsync(bbsMenuUri);
+                html = await agent.GetStringAsync(url, encoding);
             }
 
             // キャッシュ保存
             if (!doNotSaveToCache)
             {
                 var path = this.GetBbsMenuCachePath();
-                FileUtility.Write(path, html);
+                FileUtility.Write(path, html, append:false, encoding:encoding);
             }
 
             return html;
@@ -101,8 +103,9 @@ namespace OpenAA.Monazilla
 
         public string GetBbsMenuFromCache()
         {
+            var encoding = Encoding.GetEncoding("shift_jis");
             var path = this.GetBbsMenuCachePath();
-            var html = FileUtility.ReadToEnd(path);
+            var html = FileUtility.ReadToEnd(path, encoding);
             return html;
         }
 
@@ -252,23 +255,25 @@ namespace OpenAA.Monazilla
                 return string.Empty;
             }
 
-            var text = FileUtility.ReadToEnd(path);
+            var encoding = Encoding.GetEncoding("shift_jis");
+            var text = FileUtility.ReadToEnd(path, encoding);
             return text;
         }
 
         public async Task<string> GetSubjectFromOnline(MonaBoard board, bool doNotSaveToCache = false)
         {
+            var encoding = Encoding.GetEncoding("shift_jis");
             var url = new Uri(board.Server + "/" + board.Id + "/subject.txt");
             var text = "";
             using (var agent = new HttpAgent())
             {
-                text = await agent.GetStringWithAutoDetectEncodingAsync(url);
+                text = await agent.GetStringAsync(url, encoding);
             }
 
             if (!doNotSaveToCache)
             {
                 var path = this.GetSubjectCachePath(board);
-                FileUtility.Write(path, text);
+                FileUtility.Write(path, text, append:false, encoding:encoding);
             }
 
             return text;
@@ -331,8 +336,6 @@ namespace OpenAA.Monazilla
             for (;;)
             {
                 var result = await CreateResponseCore(thread, name, mail, message);
-                Console.Out.WriteLine(result);
-                Console.Out.Flush();
 
                 if (result.ResultType == MonaAgentPostResult.ResultTypes.SUCCEED)
                 {// 書き込み成功
@@ -430,6 +433,90 @@ namespace OpenAA.Monazilla
 
         // ----------------------------------------------------------------
 
+        public async Task<string> GetDat(MonaThread thread, bool forceUpdateCache = false)
+        {
+            var encoding = Encoding.GetEncoding("shift_jis");
+            var full = "";
+            var size = 0L;
+            var path = this.GetDatCachePath(thread);
+
+            // --------
+            // キャッシュ取得
+            if (!forceUpdateCache)
+            {
+                if (File.Exists(path))
+                {
+                    size = new FileInfo(path).Length;
+                    full = FileUtility.ReadToEnd(path, encoding);
+                }
+            }
+
+            // --------
+            // 差分取得
+            var url = new Uri(thread.Board.Server + "/" + thread.Board.Id + "/dat/" + thread.Id + ".dat");
+            var dif0 = "";
+            var dif1 = "";
+            using (var agent = new HttpAgent())
+            {
+                if (1 <= size)
+                { 
+                    var range = size - 1;
+                    agent.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(range, null);
+                }
+
+                bool aborn = false;
+                try
+                {
+                    dif0 = await agent.GetStringAsync(url, encoding);
+                    if (1 <= size)
+                    {
+                        if (dif0[0] != '\n')
+                        {// あぼーん検出
+                            aborn = true;
+                        }
+                    }
+                }
+                catch (HttpRequestException e)
+                {
+                    var we = e.InnerException as WebException;
+                    if (we != null && (int)we.Status == 416)
+                    {// あぼーん検出2
+                        aborn = true;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
+                if (aborn)
+                {
+                    if (forceUpdateCache)
+                    {
+                        throw new Exception();
+                    }
+                    return await this.GetDat(thread, forceUpdateCache: true);
+                }
+
+                if (1 <= size)
+                {
+                    dif1 = dif0.Substring(1);
+                }
+                else
+                {
+                    dif1 = dif0;
+                }
+
+                if (dif1 != "")
+                {
+                    full = full + dif1;
+                    FileUtility.Write(path, dif1, append: true, encoding: encoding);
+                }
+            }
+
+            return full;
+        }
+
         public void GetReponses(string server, string boardId, string threadId)
         {
             throw new NotImplementedException();
@@ -484,42 +571,48 @@ namespace OpenAA.Monazilla
             set { _dataDirectory = value; }
         }
 
-        public string SessionDirectory { 
-            get 
-            { 
-                var dir = this.DataDirectory + Path.DirectorySeparatorChar + "session"; 
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                return dir;
-            } 
+        public string GetSessionDirectory()
+        { 
+            var dir = this.DataDirectory + Path.DirectorySeparatorChar + "session"; 
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            return dir;
         }
 
-        public string CacheDirectory
+        public string GetCacheDirectory()
         { 
-            get
-            { 
-                var dir = this.DataDirectory + Path.DirectorySeparatorChar + "cache"; 
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                return dir;
-            } 
+            var dir = this.DataDirectory + Path.DirectorySeparatorChar + "cache"; 
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            return dir;
         }
 
         public string GetBbsMenuCachePath()
         {
-            return this.CacheDirectory
+            return this.GetCacheDirectory()
                 + Path.DirectorySeparatorChar + "bbsmenu.html";
         }
 
         public string GetSubjectCachePath(MonaBoard board)
         {
-            return this.CacheDirectory
+            return this.GetCacheDirectory()
                 + Path.DirectorySeparatorChar + board.Id
                 + Path.DirectorySeparatorChar + "subject.txt";
+        }
+
+        public string GetDatCachePath(MonaThread thread)
+        {
+            return this.GetCacheDirectory()
+                + Path.DirectorySeparatorChar + thread.Board.Id
+                + Path.DirectorySeparatorChar + thread.CreateTime.Year .ToString("D4")
+                + Path.DirectorySeparatorChar + thread.CreateTime.Month.ToString("D2")
+                + Path.DirectorySeparatorChar + thread.CreateTime.Day  .ToString("D2")
+                + Path.DirectorySeparatorChar + thread.Id + ".dat"
+                ;
         }
     }
 }

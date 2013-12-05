@@ -5,6 +5,7 @@
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
+    using System.Text;
 
     public class HttpAgent : System.Net.Http.HttpClient
     {
@@ -41,12 +42,24 @@
 
         public HttpClientHandler HttpClientHandler { get; private set; }
 
-        public Task<string> GetStringWithAutoDetectEncodingAsync (string requestUri)
+        public Task<string> GetStringAsync(string requestUri, Encoding encoding)
+        {
+            return GetStringAsync(new Uri(requestUri), encoding);
+        }
+
+        public async Task<string> GetStringAsync(Uri requestUri, Encoding encoding)
+        {
+            var buffer = await this.GetByteArrayAsync(requestUri);
+            var result = encoding.GetString(buffer);
+            return result;
+        }
+
+        public Task<string> GetStringWithAutoDetectEncodingAsync(string requestUri)
         {
             return GetStringWithAutoDetectEncodingAsync(new Uri(requestUri));
         }
 
-        public async Task<string> GetStringWithAutoDetectEncodingAsync (Uri requestUri)
+        public async Task<string> GetStringWithAutoDetectEncodingAsync(Uri requestUri)
         {
             var buffer = await this.GetByteArrayAsync(requestUri);
 
