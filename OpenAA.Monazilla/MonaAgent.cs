@@ -309,21 +309,21 @@ namespace OpenAA.Monazilla
             return threads;
         }
 
-        public async Task<IList<MonaThread>> GetThreads(MonaBoard board)
+        public async Task<IList<MonaThread>> GetThreadsAsync(MonaBoard board)
         {
             var subject = await this.GetSubject(board);
             var threads = this.ParseSubject(board, subject);
             return threads;
         }
 
-        public async Task<IList<MonaThread>> GetThreads(string server, string boardId)
+        public async Task<IList<MonaThread>> GetThreadsAsync(string server, string boardId)
         {
             var board = await this.GetBoard(server, boardId);
             if (board == null)
             {
                 throw new ArgumentOutOfRangeException();
             }
-            return await this.GetThreads(board);
+            return await this.GetThreadsAsync(board);
         }
 
         // ----------------------------------------------------------------
@@ -516,9 +516,35 @@ namespace OpenAA.Monazilla
             return full;
         }
 
-        public void GetReponses(string server, string boardId, string threadId)
+        public async Task<IList<MonaResponse>> GetResponses(MonaThread thread)
         {
-            throw new NotImplementedException();
+            var dat = await this.GetDat(thread);
+
+            var items = new List<MonaResponse>();
+            int no = 1;
+            foreach (var line in dat.SplitToLines())
+            {
+                if (string.IsNullOrEmpty(line))
+                {
+                    break;
+                }
+
+                var cols = line.Split(new string[]{ "<>" }, StringSplitOptions.None);
+                var item = new MonaResponse()
+                {
+                    Thread  = thread,
+                    Raw     = line,
+                    No      = no,
+                    Name    = cols[0],
+                    Mail    = cols[1],
+                    Extra   = cols[2],
+                    Message = cols[3],
+                };
+                items.Add(item);
+
+                no++;
+            }
+            return items;
         }
 
         // ----------------------------------------------------------------

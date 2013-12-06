@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// 板
@@ -45,10 +46,6 @@
             this.Threads = new List<MonaThread>();
         }
 
-        public override string ToString()
-        {
-            return string.Format("[MonaBoard: Category={0}, Server={1}, Id={2}, Name={3}, Threads={4}]", Category, Server, Id, Name, Threads);
-        }
     }
 }
 

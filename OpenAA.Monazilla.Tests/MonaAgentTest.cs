@@ -76,7 +76,7 @@
             var board = t1.Result.First(x => x.Id == "ad");
             Console.WriteLine(board);
 
-            var task2 = agent.GetThreads(board);
+            var task2 = agent.GetThreadsAsync(board);
             task2.Wait();
             var threads = task2.Result;
             foreach (var thread in threads)
@@ -94,7 +94,7 @@
             var board = t1.Result.First(x => x.Id == "ad");
             Console.WriteLine(board);
 
-            var task2 = agent.GetThreads(board);
+            var task2 = agent.GetThreadsAsync(board);
             task2.Wait();
             var thread = task2.Result
                 .OrderByDescending(x => x.Trend)
@@ -112,7 +112,7 @@
             t1.Wait();
             var board = t1.Result.First(x => x.Id == "ad");
 
-            var task2 = agent.GetThreads(board);
+            var task2 = agent.GetThreadsAsync(board);
             task2.Wait();
             var thread = task2.Result
                 .OrderByDescending(x => x.Trend)
@@ -127,6 +127,29 @@
 
             var task5 = agent.GetDat(thread);
             task5.Wait();
+        }
+
+        [Test]
+        public void GetResponses()
+        {
+            var agent = new MonaAgent();
+            var t1 = agent.GetBoards();
+            t1.Wait();
+            var board = t1.Result.First(x => x.Id == "ad");
+
+            var task2 = agent.GetThreadsAsync(board);
+            task2.Wait();
+            var thread = task2.Result
+                .OrderByDescending(x => x.Trend)
+                .First(x => 10 < x.Nums && x.Nums < 1000);
+
+            var task3 = agent.GetResponses(thread);
+            task3.Wait();
+            var res = task3.Result;
+            foreach (var one in res)
+            {
+                Console.WriteLine(one);
+            }
         }
     }
 
